@@ -30,25 +30,39 @@ def estimate_q(left, right):
     return m2 * (right - left) / (2*m1)
 
 
-def prior_estimate(left, right, fault):
-    return math.floor(math.log2(((right - left) / fault)) / math.log(1/estimate_q(left, right))) + 1
+def prior_estimate(left, right, fault, q):
+    return math.floor(math.log2(((right - left) / fault)) / math.log(1/q)) + 1
+
+
+def newton_method(x, fault, counter):
+    if input_function(x) < fault:
+        return x, counter
+
+    next_x = x - input_function(x) / first_der(x)
+    return newton_method(next_x, fault, counter + 1)
 
 
 def modified_newton_method(x, fault, x0_der, counter):
-    next_x = x - input_function(x) / x0_der
+    if input_function(x) < fault:
+        return x, counter
 
-    if input_function(next_x) < fault:
-        return next_x, counter
-    else:
-        return modified_newton_method(next_x, fault, x0_der, counter + 1)
+    next_x = x - input_function(x) / x0_der
+    return modified_newton_method(next_x, fault, x0_der, counter + 1)
 
 
 if __name__ == "__main__":
-    left_ = 5
+    left_ = 5.5
     right_ = 6
-    fault_ = 10 ** -4
+    fault_ = 10 ** -5
+    q_ = estimate_q(left_, right_)
 
-    print(prior_estimate(left_, right_, fault_))
+    print("q =", q_)
+    print("prior estimate =", prior_estimate(left_, right_, fault_, q_))
 
-    root, post_estimate = modified_newton_method(right_, fault_, first_der(right_), 1)
-    print(root, input_function(root), post_estimate)
+    root, post_estimate = newton_method(right_, fault_, 0)
+    print("----Newton method----")
+    print("x* =", root, " | f(x*) =", input_function(root), " | post-estimate =", post_estimate)
+
+    print("----modified Newton method----")
+    root_mod, post_estimate_mod = modified_newton_method(right_, fault_, first_der(right_), 0)
+    print("x* =", root_mod, " | f(x*) =", input_function(root_mod), " | post-estimate =", post_estimate_mod)
