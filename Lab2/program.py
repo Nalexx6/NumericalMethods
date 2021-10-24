@@ -21,14 +21,16 @@ def get_m(matrix, k, dim):
 
 def gauss(matrix):
     res = matrix
+    determinant = 1
     for i in range(matrix.shape[0]):
         p = get_p_permutation(i, np.argmax(matrix, 0)[i], matrix.shape[0])
+        determinant *= np.amax(res, 0)[i]
         res = p @ res
         res = get_m(res, i, res.shape[0]) @ res
 
     coefficients = res[:, 0:4]
     values = res[:, 4]
-    return np.linalg.solve(coefficients, values)
+    return np.linalg.solve(coefficients, values), determinant
 
 
 def zeidel(coefficients, values, e):
@@ -56,15 +58,33 @@ def zeidel(coefficients, values, e):
     return x_cur
 
 
+def condition_number(input_matrix):
+    inv = np.linalg.inv(input_matrix)
+    # return norm(input_matrix) * norm(inv)
+    return np.linalg.norm(input_matrix, np.inf) * np.linalg.norm(inv, np.inf)
+
+
+def norm(input_matrix):
+    matrix_norm = 0
+    for i in range(input_matrix.shape[0]):
+        if matrix_norm < np.sum(input_matrix[i]):
+            matrix_norm = np.sum(input_matrix[i])
+
+    return matrix_norm
+
+
 if __name__ == "__main__":
     matrix = np.array([[5, 2, 1, 1, 4], [2, 5, -1, -1, 3], [1, -1, 6, -1, 2], [1, -1, -1, 4, 1]])
     a_matrix = np.array([[5, 2, 1, 1], [2, 5, -1, -1], [1, -1, 6, -1], [1, -1, -1, 4]])
     b_array = np.array([4, 3, 2, 1])
 
     expected_values = np.linalg.solve(a_matrix, b_array)
-    received_values_gauss = gauss(matrix)
+    received_values_gauss, determinant = gauss(matrix)
     received_values_zeidel = zeidel(a_matrix, b_array, 0.000001)
 
-    print(expected_values)
-    print(received_values_gauss)
-    print(received_values_zeidel)
+    print("Numpy solution : " + str(expected_values))
+    print("Gauss solution : " + str(received_values_gauss))
+    print("Zeidel solution: " + str(received_values_zeidel))
+    print("Determinant : " + str(determinant))
+    print("Condition number : " + str(condition_number(a_matrix)))
+
