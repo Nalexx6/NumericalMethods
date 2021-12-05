@@ -88,13 +88,14 @@ if __name__ == "__main__":
     for i, (start, stop) in enumerate(zip(points, points[1:])):
         x_hat = np.linspace(start, stop, num=50)
         y_hat = [s(x) for x in x_hat]
-        plt.plot(x_hat, y_hat)
+        plt.plot(x_hat, y_hat, 'r')
+    plt.scatter(points, values)
     plt.show()
 
     L = get_L(points, values)
     for i, (start, stop) in enumerate(zip(points[::2], points[2::2])):
         x_hat = np.linspace(start, stop, num=50)
         y_hat = [L(x, 2 * i + 1) for x in x_hat]
-        plt.plot(x_hat, y_hat)
-
+        plt.plot(x_hat, y_hat, 'r')
+    plt.scatter(points, values)
     plt.show()
